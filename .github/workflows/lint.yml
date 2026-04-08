@@ -26,7 +26,8 @@ jobs:
         run: |
           cd ${{ matrix.subdir }}
           export PYTHONPATH=$PYTHONPATH:.
-          pipenv run pylint **/*.py
+          # Ignore third-party modules that fail to resolve in CI env
+          pipenv run python -m pylint **/*.py --ignored-modules=pytest,flask,pytest_flask
       - name: Format with black
         if: ${{ hashFiles(format('{0}/**/*.py', matrix.subdir)) != '' }}
         run: |

@@ -2,6 +2,7 @@
 
 from flask import Flask
 
+# pylint: disable=invalid-name
 app = Flask(__name__)
 
 

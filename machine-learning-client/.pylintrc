@@ -3,3 +3,7 @@ max-line-length=200
 
 [DESIGN]
 max-locals=100
+
+[TYPECHECK]
+extension-pkg-allow-list=cv2
+generated-members=cv2.*

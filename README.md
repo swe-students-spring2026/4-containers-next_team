@@ -43,6 +43,7 @@ mkdir -p machine-learning-client/data/model/
 
 # Place your trained weights file here (e.g., model.pth for PyTorch or model.h5 for Keras)
 # Path should look like: machine-learning-client/data/model/sign_language_model.pth
+```
 
 
 **4. Set up environment variables**

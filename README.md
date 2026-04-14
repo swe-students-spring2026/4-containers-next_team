@@ -33,18 +33,28 @@ cd 4-containers-next_team
 
 **3. Provide a sample video**
 To avoid hardware permission issues with webcams inside Docker containers, our ML client processes a sample video feed for testing. You need to provide a short video of hand gestures or create a placeholder file in `machine-learning-client/data/raw/` *before* running docker-compose.
-*(Note: If you skip this, Docker will create a directory named `sample.mp4` by mistake and crash the ML container!)*
 ```bash
-# either copy a real short video containing ASL hand gestures to this path, or just create a blank placeholder file:
-touch machine-learning-client/data/raw/sample.mp4
-
 # Ensure the model directory exists
-mkdir -p machine-learning-client/data/model/
+mkdir -p machine-learning-client/src/data/processed/
+mkdir -p machine-learning-client/src/data/raw/
 
 # Place your trained weights file here (e.g., model.pth for PyTorch or model.h5 for Keras)
 # Path should look like: machine-learning-client/data/model/sign_language_model.pth
 ```
+Download the dataset from:
 
+https://www.kaggle.com/datasets/datamunge/sign-language-mnist?resource=download
+
+and place it in 
+
+machine-learning-client/src/data/raw/
+
+**3.5. Train the model**
+```bash
+cd machine-learning-client\src
+
+python src_main.py
+```
 
 **4. Set up environment variables**
 We use a `.env` file for config. Create it by copying the template we provided:

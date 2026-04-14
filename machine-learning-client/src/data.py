@@ -40,7 +40,7 @@ class SignLanguageDataset(Dataset):
 def get_train_loader():
     """Returns a DataLoader for the training dataset."""
     trainset = SignLanguageDataset(
-        f"{DATA_ROOT}/sign_mnist_train.csv", img_transform=transform
+        f"{DATA_ROOT}/raw/sign_mnist_train.csv", img_transform=transform
     )
     return DataLoader(
         trainset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS
@@ -50,7 +50,7 @@ def get_train_loader():
 def get_test_loader():
     """Returns a DataLoader for the test dataset."""
     testset = SignLanguageDataset(
-        f"{DATA_ROOT}/sign_mnist_test.csv", img_transform=transform
+        f"{DATA_ROOT}/raw/sign_mnist_test.csv", img_transform=transform
     )
     return DataLoader(
         testset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS

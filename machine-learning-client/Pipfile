@@ -7,6 +7,7 @@ name = "pypi"
 opencv-python = "==4.13.0.92"
 mediapipe = "==0.10.31"
 pymongo = "==4.6.2"
+python-dotenv = "*"
 
 [dev-packages]
 pytest = "==8.1.1"

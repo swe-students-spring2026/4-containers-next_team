@@ -10,43 +10,51 @@
       <span class="status-dot"></span>
     </div>
 
-    <div class="camera-box">
-      <video id="camera-preview" autoplay playsinline muted></video>
-      <button id="camera-toggle-btn" type="button">📷 Start Camera</button>
-    </div>
-
-    <div class="live-letter-wrap">
-      <div class="live-letter" id="latest-label">
-        {{ latest.predicted_label if latest else "N/A" }}
+    <div class="hero-layout">
+      <div class="camera-col">
+        <div class="camera-box">
+          <video id="camera-preview" autoplay playsinline muted></video>
+        </div>
       </div>
+      <div class="info-col">
+        <div class="action-top">
+          <button id="camera-toggle-btn" type="button" class="secondary">📷 Start Camera</button>
+        </div>
 
-      <div class="live-meta">
-        <p>
-          <strong>Confidence:</strong>
-          <span id="latest-confidence">{{ latest.confidence if latest else 0.0 }}</span>
-        </p>
-        <p>
-          <strong>Timestamp:</strong>
-          <span id="latest-timestamp">{{ latest.timestamp if latest else "N/A" }}</span>
-        </p>
-      </div>
-    </div>
+        <div class="live-letter-wrap">
+          <div class="live-letter {% if not latest or latest.predicted_label == 'N/A' %}is-na{% endif %}" id="latest-label">
+            {{ latest.predicted_label if latest else "N/A" }}
+          </div>
 
-    <div class="translation-box">
-      <label for="accumulated-text">Translated Text</label>
-      <textarea id="accumulated-text" rows="3" readonly>{{
-        latest.current_text if latest and latest.current_text else (latest.predicted_label if latest else "N/A")
-      }}</textarea>
+          <div class="live-meta">
+            <p>
+              <strong>Confidence:</strong>
+              <span id="latest-confidence">{{ latest.confidence if latest else 0.0 }}</span>
+            </p>
+            <p>
+              <strong>Timestamp:</strong>
+              <span id="latest-timestamp">{{ latest.timestamp if latest else "N/A" }}</span>
+            </p>
+          </div>
+        </div>
 
-      <div class="button-row">
-        <button id="speak-current-btn" type="button">🔊 Speak Current</button>
-        <button id="speak-text-btn" type="button">🗣 Speak Text</button>
-        <button id="clear-text-btn" type="button" class="secondary">🗑 Clear</button>
-      </div>
+        <div class="translation-box">
+          <label for="accumulated-text">Translated Text</label>
+          <textarea id="accumulated-text" rows="3" readonly>{{
+            latest.current_text if latest and latest.current_text else (latest.predicted_label if latest else "N/A")
+          }}</textarea>
 
-      <div class="toggle-row">
-        <input type="checkbox" id="auto-speak-toggle" />
-        <label for="auto-speak-toggle">Auto speak new predictions</label>
+          <div class="button-row">
+            <button id="speak-current-btn" type="button">🔊 Speak Current</button>
+            <button id="speak-text-btn" type="button">🗣 Speak Text</button>
+            <button id="clear-text-btn" type="button" class="secondary">🗑 Clear</button>
+          </div>
+
+          <div class="toggle-row">
+            <input type="checkbox" id="auto-speak-toggle" />
+            <label for="auto-speak-toggle">Auto speak new predictions</label>
+          </div>
+        </div>
       </div>
     </div>
   </article>

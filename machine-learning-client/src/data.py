@@ -9,7 +9,7 @@ from pymongo import MongoClient
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from dotenv import load_dotenv
-from src_config import BATCH_SIZE, DATA_ROOT, NUM_WORKERS
+from src_config import BATCH_SIZE, NUM_WORKERS
 
 load_dotenv()
 
@@ -19,6 +19,7 @@ transform = transforms.Compose(
 
 
 def get_db():
+    """Connect to MongoDB and return the database object."""
     client = MongoClient(os.getenv("MONGO_URI"))
     db = client[os.getenv("MONGO_DB_NAME", "sign_language_db")]
     return db

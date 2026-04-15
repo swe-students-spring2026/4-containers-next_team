@@ -1,7 +1,11 @@
+"""Test script for data loading and preprocessing."""
+
 from data import get_train_loader, get_test_loader
 
 
 def main():
+    """Test the data loading and preprocessing pipeline."""
+    
     train_loader = get_train_loader()
     test_loader = get_test_loader()
 

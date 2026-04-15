@@ -28,6 +28,7 @@ def index():
 
 @pages_bp.route("/history")
 def history():
+    """Render the prediction history page with search and sort options."""
     search_query = request.args.get("search", "").strip()
     sort_order = request.args.get("sort", "desc").strip().lower()
 

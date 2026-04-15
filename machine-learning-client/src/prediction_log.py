@@ -2,11 +2,8 @@
 
 import os
 from datetime import datetime, timezone
-
-from dotenv import load_dotenv
 from pymongo import MongoClient
 
-load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "sign_language_db")

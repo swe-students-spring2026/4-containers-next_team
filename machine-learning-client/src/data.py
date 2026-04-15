@@ -8,10 +8,7 @@ import numpy as np
 from pymongo import MongoClient
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-from dotenv import load_dotenv
 from src_config import BATCH_SIZE, NUM_WORKERS
-
-load_dotenv()
 
 transform = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]

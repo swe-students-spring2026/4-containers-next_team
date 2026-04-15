@@ -3,9 +3,6 @@
 import os
 import pandas as pd
 from pymongo import MongoClient
-from dotenv import load_dotenv
-
-load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("MONGO_DB_NAME", "sign_language_db")

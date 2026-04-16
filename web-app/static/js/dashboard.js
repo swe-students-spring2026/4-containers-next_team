@@ -99,16 +99,7 @@
     const recent = await fetchRecent();
     const stats = await fetchStats();
 
-    const labelVal = latest.predicted_label ?? "N/A";
-    updateText("latest-label", labelVal);
-    const labelEl = document.getElementById("latest-label");
-    if (labelEl) {
-      if (labelVal === "N/A") {
-        labelEl.classList.add("is-na");
-      } else {
-        labelEl.classList.remove("is-na");
-      }
-    }
+    updateText("latest-label", latest.predicted_label ?? "N/A");
     updateText("latest-confidence", latest.confidence ?? 0);
     updateText("latest-timestamp", latest.timestamp ?? "N/A");
 

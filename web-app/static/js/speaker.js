@@ -1,108 +1,123 @@
 (function () {
   "use strict";
 
+  let autoSpeakEnabled = false;
+
+  function normalizeForSpeech(text) {
+    const value = (text || "").trim();
+
+    if (!value || value === "N/A") {
+      return "";
+    }
+
+    const singleLetterMatch = /^[A-Z]$/.test(value);
+    if (singleLetterMatch) {
+      return value.toLowerCase();
+    }
+
+    const spacedLettersMatch = /^[A-Z](\s+[A-Z])+$/.test(value);
+    if (spacedLettersMatch) {
+      return value
+        .split(/\s+/)
+        .map((part) => part.toLowerCase())
+        .join(" ");
+    }
+
+    return value;
+  }
+
   function speak(text) {
-    if (!text || !window.speechSynthesis) {
+    if (!window.speechSynthesis) {
       return;
     }
 
-    const synth = window.speechSynthesis;
-    synth.cancel();
+    const finalText = normalizeForSpeech(text);
+    if (!finalText) {
+      return;
+    }
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(finalText);
     utterance.lang = "en-US";
     utterance.rate = 0.95;
     utterance.pitch = 1;
     utterance.volume = 1;
 
-    const voices = synth.getVoices();
-    const englishVoice = voices.find((voice) => voice.lang && voice.lang.startsWith("en"));
+    window.speechSynthesis.speak(utterance);
+  }
 
-    if (englishVoice) {
-      utterance.voice = englishVoice;
+  function getSpeakableText() {
+    const textArea = document.getElementById("accumulated-text");
+    const latestLabel = document.getElementById("latest-label");
+
+    const text = textArea ? textArea.value.trim() : "";
+    if (text && text !== "N/A") {
+      return text;
     }
 
-    utterance.onstart = function () {
-      console.log("Speech started:", text);
-    };
-
-    utterance.onend = function () {
-      console.log("Speech ended");
-    };
-
-    utterance.onerror = function (event) {
-      console.error("Speech error:", event);
-    };
-
-    synth.speak(utterance);
+    return latestLabel ? latestLabel.textContent.trim() : "";
   }
 
-  function getCurrentLabel() {
-    const el = document.getElementById("latest-label");
-    return el ? el.textContent.trim() : "";
-  }
+  function updateAutoSpeakButton() {
+    const button = document.getElementById("auto-speak-btn");
+    if (!button) {
+      return;
+    }
 
-  function getCurrentText() {
-    const el = document.getElementById("accumulated-text");
-    return el ? el.value.trim() : "";
+    button.textContent = autoSpeakEnabled ? "Auto Speak: On" : "Auto Speak: Off";
+    button.classList.toggle("active-toggle", autoSpeakEnabled);
   }
 
   window.speakerAPI = {
-    speakLabel() {
-      const label = getCurrentLabel();
-      console.log("Current label:", label);
-      if (label && label !== "N/A") {
-        speak(label);
-      }
+    speakCurrent() {
+      speak(getSpeakableText());
     },
 
-    speakText() {
-      const text = getCurrentText();
-      console.log("Current text:", text);
-      if (text && text !== "N/A") {
-        speak(text);
-      }
+    speakText(text) {
+      speak(text);
     },
 
     stop() {
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
+    },
+
+    isAutoSpeakEnabled() {
+      return autoSpeakEnabled;
+    },
+
+    toggleAutoSpeak() {
+      autoSpeakEnabled = !autoSpeakEnabled;
+      updateAutoSpeakButton();
+      return autoSpeakEnabled;
     }
   };
 
-  function loadVoices() {
-    window.speechSynthesis.getVoices();
-  }
-
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-  loadVoices();
-
   window.addEventListener("load", function () {
-    const speakCurrentBtn = document.getElementById("speak-current-btn");
-    const speakTextBtn = document.getElementById("speak-text-btn");
-    const clearTextBtn = document.getElementById("clear-text-btn");
-    const textArea = document.getElementById("accumulated-text");
+    const speakButton = document.getElementById("speak-btn");
+    const autoSpeakButton = document.getElementById("auto-speak-btn");
+    const stopSpeakerButton = document.getElementById("stop-speaker-btn");
 
-    if (speakCurrentBtn) {
-      speakCurrentBtn.addEventListener("click", function () {
-        console.log("Speak Current clicked");
-        window.speakerAPI.speakLabel();
+    if (speakButton) {
+      speakButton.addEventListener("click", function () {
+        window.speakerAPI.speakCurrent();
       });
     }
 
-    if (speakTextBtn) {
-      speakTextBtn.addEventListener("click", function () {
-        console.log("Speak Text clicked");
-        window.speakerAPI.speakText();
+    if (autoSpeakButton) {
+      autoSpeakButton.addEventListener("click", function () {
+        window.speakerAPI.toggleAutoSpeak();
       });
     }
 
-    if (clearTextBtn && textArea) {
-      clearTextBtn.addEventListener("click", function () {
-        textArea.value = "";
+    if (stopSpeakerButton) {
+      stopSpeakerButton.addEventListener("click", function () {
         window.speakerAPI.stop();
       });
     }
+
+    updateAutoSpeakButton();
   });
 })();

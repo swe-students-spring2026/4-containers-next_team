@@ -231,7 +231,7 @@ docker-compose up --build
 
 **5. View the app and logs**
 - **Web App:** Go to [web](http://localhost:5001) in your browser to see the App.
->>>>>>> Stashed changes
+
 - **ML Client Logs:** To check if the machine learning client is running and processing the video, open a new terminal and run:
   ```bash
   docker logs ergonomics_ml

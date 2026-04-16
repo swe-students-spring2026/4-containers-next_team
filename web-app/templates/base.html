@@ -7,20 +7,25 @@
       content="width=device-width, initial-scale=1, user-scalable=no"
     />
     <title>{% block title %}Sign Language Recognition Dashboard{% endblock %}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=2) }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}" />
+    {% block head %}{% endblock %}
   </head>
-  <body class="is-preload" data-refresh-ms="{{ refresh_ms|default(3000) }}">
+  <body
+    class="is-preload"
+    data-refresh-ms="{{ refresh_ms|default(3000) }}"
+    data-ml-api-base-url="{{ ml_api_base_url|default('http://127.0.0.1:8000') }}"
+  >
     <div id="app-shell">
       <header id="header">
         <nav class="top-nav">
-          <a href="{{ url_for('pages.index') }}" class="nav-link">Dashboard</a>
+          <a href="{{ url_for('pages.index') }}" class="nav-link">Dashboard + Game</a>
           <a href="{{ url_for('pages.history') }}" class="nav-link">History</a>
         </nav>
 
-        <h1>Sign Language Recognition Dashboard</h1>
+        <h1>SignBridge</h1>
         <p>
-          Real-time ASL alphabet recognition, live confidence updates, MongoDB-backed history, and one-click speech output.
+          Real-time ASL recognition, word challenges game with bonus medal wall, and live speech output.
         </p>
       </header>
 
@@ -29,10 +34,15 @@
       </main>
 
       <footer id="footer">
+        <ul class="copyright">
+          <li>Next Team</li>
+          <li>Flask + MongoDB + ML Client</li>
+        </ul>
       </footer>
     </div>
 
     <script src="{{ url_for('static', filename='js/speaker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
   </body>
 </html>

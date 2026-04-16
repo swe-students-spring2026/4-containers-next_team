@@ -1,7 +1,7 @@
 """MongoDB connection helpers for the Flask web app."""
 
-from pymongo import MongoClient
 from flask import current_app, g
+from pymongo import MongoClient
 
 
 def get_client() -> MongoClient:
@@ -19,5 +19,5 @@ def get_db():
 
 def get_predictions_collection():
     """Return the configured MongoDB predictions collection."""
-    db = get_db()
-    return db[current_app.config["MONGO_COLLECTION"]]
+    database = get_db()
+    return database[current_app.config["MONGO_COLLECTION"]]

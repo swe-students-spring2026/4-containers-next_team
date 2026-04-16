@@ -1,3 +1,4 @@
+# pylint: disable=too-many-locals
 """
 Validation module for calculating model performance on the test set.
 """
@@ -56,3 +57,7 @@ def evaluate():
         if total_per_class[label] > 0:
             acc = 100.0 * correct_per_class[label] / total_per_class[label]
             print(f"- {label:10s}: {acc:.2f}%")
+
+
+if __name__ == "__main__":
+    evaluate()

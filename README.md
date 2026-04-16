@@ -243,6 +243,14 @@ When you're done, stop the containers properly so your database data isn't lost:
 ```bash
 docker-compose down
 ```
+
+## Development Workflow
+
+We use a basic Agile workflow for this project:
+
+- **Task Board**: We track tasks using the GitHub Projects board linked to this repo.
+- **Dependencies**: Each subsystem (`web-app` and `machine-learning-client`) manages its own dependencies using Pipenv to keep things separated.
+- **CI / CD Pipeline**: We use Github Actions for CI. Any pull request has to pass Pytest (with >80% coverage) and linting checks (Pylint & Black) before we can merge it into the main branch.
 ```md
 
 ## Product User Stories
@@ -274,10 +282,4 @@ docker-compose down
 10. As a learner, I want an accessible educational tool rather than just a model demo so that I can engage with sign language recognition in a more practical way.
 
 
-## Development Workflow
 
-We use a basic Agile workflow for this project:
-
-- **Task Board**: We track tasks using the GitHub Projects board linked to this repo.
-- **Dependencies**: Each subsystem (`web-app` and `machine-learning-client`) manages its own dependencies using Pipenv to keep things separated.
-- **CI / CD Pipeline**: We use Github Actions for CI. Any pull request has to pass Pytest (with >80% coverage) and linting checks (Pylint & Black) before we can merge it into the main branch.

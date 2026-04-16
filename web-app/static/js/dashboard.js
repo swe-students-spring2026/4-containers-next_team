@@ -1,23 +1,28 @@
 (function () {
   "use strict";
 
-  const refreshMs = Number(document.body.dataset.refreshMs || 3000);
+  const refreshMs = Number(document.body.dataset.refreshMs || 1000);
+  const mlApiBaseUrl =
+    document.body.dataset.mlApiBaseUrl || "http://127.0.0.1:8000";
 
-  let lastSpokenLabel = "";
-  let lastPredictionId = "";
   let currentCameraStream = null;
+  let predictionIntervalId = null;
+  let refreshIntervalId = null;
+  let frameNumber = 0;
+  let lastAutoSpokenLabel = "";
+  let isSendingFrame = false;
 
   function updateText(id, value) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.textContent = value;
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = value;
     }
   }
 
   function updateValue(id, value) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.value = value;
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value;
     }
   }
 
@@ -31,33 +36,8 @@
     `;
   }
 
-  function renderLabelChips(labelCounts) {
-    const container = document.getElementById("label-chips");
-    if (!container) {
-      return;
-    }
-
-    const entries = Object.entries(labelCounts || {});
-    if (!entries.length) {
-      container.innerHTML = `<span class="chip">No data</span>`;
-      return;
-    }
-
-    container.innerHTML = entries
-      .map(([label, count]) => `<span class="chip">${label} · ${count}</span>`)
-      .join("");
-  }
-
-  async function fetchLatest() {
-    const response = await fetch("/api/latest");
-    if (!response.ok) {
-      throw new Error("Failed to fetch latest prediction");
-    }
-    return response.json();
-  }
-
   async function fetchRecent() {
-    const response = await fetch("/api/recent");
+    const response = await fetch("/api/recent", { cache: "no-store" });
     if (!response.ok) {
       throw new Error("Failed to fetch recent predictions");
     }
@@ -65,63 +45,17 @@
   }
 
   async function fetchStats() {
-    const response = await fetch("/api/stats");
+    const response = await fetch("/api/stats", { cache: "no-store" });
     if (!response.ok) {
       throw new Error("Failed to fetch stats");
     }
     return response.json();
   }
 
-  function maybeAutoSpeak(data) {
-    const toggle = document.getElementById("auto-speak-toggle");
-    const shouldSpeak = toggle && toggle.checked;
-    const label = data.predicted_label || "";
-    const currentId = data.id || `${data.timestamp}-${label}`;
+  async function refreshPanels() {
+    const [recent, stats] = await Promise.all([fetchRecent(), fetchStats()]);
 
-    if (
-      shouldSpeak &&
-      label &&
-      label !== "N/A" &&
-      currentId !== lastPredictionId &&
-      label !== lastSpokenLabel
-    ) {
-      lastPredictionId = currentId;
-      lastSpokenLabel = label;
-
-      if (window.speakerAPI) {
-        window.speakerAPI.speakLabel();
-      }
-    }
-  }
-
-  async function refreshDashboard() {
-    const latest = await fetchLatest();
-    const recent = await fetchRecent();
-    const stats = await fetchStats();
-
-    const labelVal = latest.predicted_label ?? "N/A";
-    updateText("latest-label", labelVal);
-    const labelEl = document.getElementById("latest-label");
-    if (labelEl) {
-      if (labelVal === "N/A") {
-        labelEl.classList.add("is-na");
-      } else {
-        labelEl.classList.remove("is-na");
-      }
-    }
-    updateText("latest-confidence", latest.confidence ?? 0);
-    updateText("latest-timestamp", latest.timestamp ?? "N/A");
-
-    const currentText =
-      latest.current_text && latest.current_text.trim()
-        ? latest.current_text
-        : latest.predicted_label || "N/A";
-
-    updateValue("accumulated-text", currentText);
-
-    updateText("total-predictions", stats.total_predictions ?? 0);
     updateText("avg-confidence", stats.average_confidence ?? 0);
-    updateText("top-label", stats.top_label ?? "N/A");
 
     const recentTableBody = document.getElementById("recent-table-body");
     if (recentTableBody) {
@@ -132,17 +66,149 @@
           '<tr><td colspan="3">No prediction data available yet.</td></tr>';
       }
     }
-
-    renderLabelChips(stats.label_counts);
-    maybeAutoSpeak(latest);
   }
 
-  async function startCamera() {
+  function captureFrame(video) {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Could not create canvas context.");
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.8);
+  }
+
+  function maybeAutoSpeak(label) {
+    if (!window.speakerAPI || !window.speakerAPI.isAutoSpeakEnabled()) {
+      return;
+    }
+
+    if (!label || label === "N/A") {
+      return;
+    }
+
+    if (label !== lastAutoSpokenLabel) {
+      lastAutoSpokenLabel = label;
+      window.speakerAPI.speakText(label);
+    }
+  }
+
+  async function sendFrameForPrediction() {
+    if (isSendingFrame) {
+      return;
+    }
+
+    const video = document.getElementById("camera-preview");
+    if (!video || video.readyState < 2 || !currentCameraStream) {
+      return;
+    }
+
+    isSendingFrame = true;
+
+    try {
+      frameNumber += 1;
+      const image = captureFrame(video);
+
+      const response = await fetch(`${mlApiBaseUrl}/predict-frame`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          image,
+          frame_number: frameNumber
+        })
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Prediction request failed: ${text}`);
+      }
+
+      const data = await response.json();
+      const timestamp = new Date().toISOString();
+      const label = data.predicted_label ?? "N/A";
+      const confidence = data.confidence ?? 0;
+
+      updateText("latest-label", label);
+      updateText("latest-confidence", confidence);
+      updateText("latest-timestamp", timestamp);
+      updateValue("accumulated-text", label);
+
+      document.dispatchEvent(
+        new CustomEvent("prediction-update", {
+          detail: {
+            label,
+            confidence,
+            timestamp
+          }
+        })
+      );
+
+      await refreshPanels();
+      maybeAutoSpeak(label);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      isSendingFrame = false;
+    }
+  }
+
+  function stopPredictionLoop() {
+    if (predictionIntervalId) {
+      window.clearInterval(predictionIntervalId);
+      predictionIntervalId = null;
+    }
+  }
+
+  function startPredictionLoop() {
+    stopPredictionLoop();
+    predictionIntervalId = window.setInterval(() => {
+      sendFrameForPrediction().catch(console.error);
+    }, 800);
+  }
+
+  function stopRefreshLoop() {
+    if (refreshIntervalId) {
+      window.clearInterval(refreshIntervalId);
+      refreshIntervalId = null;
+    }
+  }
+
+  function startRefreshLoop() {
+    stopRefreshLoop();
+    refreshIntervalId = window.setInterval(() => {
+      refreshPanels().catch(console.error);
+    }, refreshMs);
+  }
+
+  function resetPredictionDisplay() {
+    updateText("latest-label", "N/A");
+    updateText("latest-confidence", 0);
+    updateText("latest-timestamp", "N/A");
+    updateValue("accumulated-text", "N/A");
+    lastAutoSpokenLabel = "";
+  }
+
+  async function toggleCamera() {
     const video = document.getElementById("camera-preview");
     const button = document.getElementById("camera-toggle-btn");
 
-    if (!video || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Camera is not supported in this browser.");
+    if (!video) {
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      alert("Camera access requires localhost or HTTPS.");
+      return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Camera is unavailable in this browser.");
       return;
     }
 
@@ -150,28 +216,34 @@
       currentCameraStream.getTracks().forEach((track) => track.stop());
       currentCameraStream = null;
       video.srcObject = null;
+      stopPredictionLoop();
+      resetPredictionDisplay();
 
       if (button) {
-        button.textContent = "📷 Start Camera";
+        button.textContent = "Start Camera";
       }
+
       return;
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      currentCameraStream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: false
       });
 
-      currentCameraStream = stream;
-      video.srcObject = stream;
+      video.srcObject = currentCameraStream;
+      await video.play();
 
       if (button) {
-        button.textContent = "⏹ Stop Camera";
+        button.textContent = "Stop Camera";
       }
+
+      await sendFrameForPrediction();
+      startPredictionLoop();
     } catch (error) {
-      console.error("Camera access denied or unavailable:", error);
-      alert("Unable to access the camera. Please allow camera permission in your browser.");
+      console.error(error);
+      alert("Unable to access the camera.");
     }
   }
 
@@ -180,20 +252,14 @@
       document.body.classList.remove("is-preload");
     }, 100);
 
-    const cameraBtn = document.getElementById("camera-toggle-btn");
-    if (cameraBtn) {
-      cameraBtn.addEventListener("click", function () {
-        startCamera();
+    const cameraButton = document.getElementById("camera-toggle-btn");
+    if (cameraButton) {
+      cameraButton.addEventListener("click", function () {
+        toggleCamera().catch(console.error);
       });
     }
 
-    if (!document.getElementById("latest-label")) {
-      return;
-    }
-
-    refreshDashboard().catch(console.error);
-    window.setInterval(function () {
-      refreshDashboard().catch(console.error);
-    }, refreshMs);
+    refreshPanels().catch(console.error);
+    startRefreshLoop();
   });
 })();

@@ -3,6 +3,7 @@
 from collections import Counter
 from statistics import mean
 from typing import Any
+
 from db.mongo import get_predictions_collection
 
 
@@ -29,14 +30,16 @@ def _serialize_prediction(doc: dict[str, Any] | None) -> dict[str, Any] | None:
 def get_latest_prediction():
     """Return the most recent prediction document."""
     collection = get_predictions_collection()
-    doc = collection.find_one(sort=[("timestamp", -1)])
+    doc = collection.find_one(sort=[("_id", -1)])
     return _serialize_prediction(doc)
 
 
 def get_recent_predictions(
-    limit: int = 10, search_query: str = "", sort_order: str = "desc"
+    limit: int = 10,
+    search_query: str = "",
+    sort_order: str = "desc",
 ):
-    """Return a list of recent prediction documents, optionally filtered by predicted label."""
+    """Return recent prediction documents, optionally filtered by label."""
     collection = get_predictions_collection()
 
     query = {}
@@ -49,8 +52,7 @@ def get_recent_predictions(
         }
 
     sort_direction = 1 if sort_order == "asc" else -1
-
-    docs = collection.find(query).sort("timestamp", sort_direction).limit(limit)
+    docs = collection.find(query).sort("_id", sort_direction).limit(limit)
     return [_serialize_prediction(doc) for doc in docs]
 
 

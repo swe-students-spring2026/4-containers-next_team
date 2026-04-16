@@ -8,6 +8,7 @@ flask = "*"
 pymongo = "*"
 python-dotenv = "*"
 gunicorn = "*"
+pandas = "*"
 
 [dev-packages]
 pytest-cov = "==5.0.0"

@@ -1,3 +1,4 @@
+# pylint: disable=no-member,too-many-locals
 """Realtime camera capture for inference."""
 
 import torch
@@ -9,7 +10,7 @@ from preprocessing import preprocess_frame
 from prediction_log import log_prediction
 
 
-def run(camera_index: int = 0, frame_step: int = 10, invert: bool = False):
+def run(camera_index: int = 0, frame_step: int = 3, invert: bool = False):
     """Capture webcam frames, sample every 10 frame, and print predictions."""
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -77,3 +78,7 @@ def run(camera_index: int = 0, frame_step: int = 10, invert: bool = False):
     finally:
         cap.release()
         cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    run()

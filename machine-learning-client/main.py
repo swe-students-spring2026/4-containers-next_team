@@ -1,20 +1,12 @@
-"""Main module for Machine Learning Client."""
+"""Execution entry point for realtime inference."""
 
-import time
+from src.server import app
 
 
 def analyze_posture():
-    """Analyze posture placeholder."""
+    """Placeholder function kept for compatibility with existing tests."""
     return True
 
 
-def run():
-    """Run the client daemon loop."""
-    print("Machine learning client running...")
-    while True:
-        analyze_posture()
-        time.sleep(1)
-
-
 if __name__ == "__main__":
-    run()
+    app.run(host="0.0.0.0", port=8000, debug=True)

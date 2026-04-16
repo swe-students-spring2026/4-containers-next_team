@@ -180,6 +180,7 @@ If the `.env` file is missing, create it by copying the provided template:
 ```bash
 cp .env.example .env
 ```
+Please configure the username and password in the file.
 Docker compose will use this file. The default values inside are fine for running the app locally, but the file just needs to be there.
 
 
@@ -188,13 +189,19 @@ Docker compose will use this file. The default values inside are fine for runnin
 **1. Start the Machine Learning Client** 
 ```bash
 cd machine-learning-client
-PYTHONPATH=src pipenv run python main.py
+pipenv install     # Install pipenv
+mkdir -p data/processed      # Store the training data
+PYTHONPATH=src pipenv run python src/train.py    # Train the model to generate the.pth file
+PYTHONPATH=src pipenv run python src/val.py
+PYTHONPATH=src pipenv run python main.py    # Run the back-end
 ```
 
 **2 Start the Web App**
+Split a new terminal window
 ```bash
 cd web-app
-pipenv run python app.py
+pipenv install  # Install pipenv
+pipenv run python app.py # Run the front-end
 ```
 Go to [web](http://localhost:5001) in your browser to see the App.
 

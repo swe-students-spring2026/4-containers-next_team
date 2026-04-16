@@ -36,7 +36,6 @@ This makes the project especially useful for two types of users:
 8. As a learner, I want the project to show how sign language recognition works end-to-end so that I can better understand the relationship between image input, prediction, and displayed output.
 9. As a learner, I want a history view of recognized gestures so that I can identify repeated mistakes in my practice.
 10. As a learner, I want an accessible educational tool rather than just a model demo so that I can engage with sign language recognition in a more practical way.
-```
 
 ## Product Overview
 SignBridge is containerized computer vision application designed to recognize and translate sign language gestures in real-time. The project uses a Machine Learning client (utilizing OpenCV and a Convolutional Neural Network trained on the Sign Language MNIST dataset) to detect American Sign Language (ASL) alphabet gestures from a video feed, and saves the classification results to a MongoDB database. A Flask web dashboard reads this database to show the translated gestures and confidence scores in real-time.
@@ -52,7 +51,6 @@ SignBridge is containerized computer vision application designed to recognize an
 This project is containerized using Docker and is split into three main parts, run together using Docker Compose:
 
 The application consists of three main services:
-
 ```text
 +---------------------------+      +-----------------------+      +---------------------------+
 | Machine Learning Client   | ---> | MongoDB Database      | ---> | Flask Web Dashboard       |
@@ -182,6 +180,7 @@ If the `.env` file is missing, create it by copying the provided template:
 ```bash
 cp .env.example .env
 ```
+Please configure the username and password in the file.
 Docker compose will use this file. The default values inside are fine for running the app locally, but the file just needs to be there.
 
 
@@ -190,13 +189,19 @@ Docker compose will use this file. The default values inside are fine for runnin
 **1. Start the Machine Learning Client** 
 ```bash
 cd machine-learning-client
-PYTHONPATH=src pipenv run python main.py
+pipenv install     # Install pipenv
+mkdir -p data/processed      # Store the training data
+PYTHONPATH=src pipenv run python src/train.py    # Train the model to generate the.pth file
+PYTHONPATH=src pipenv run python src/val.py
+PYTHONPATH=src pipenv run python main.py    # Run the back-end
 ```
 
 **2 Start the Web App**
+Split a new terminal window
 ```bash
 cd web-app
-pipenv run python app.py
+pipenv install  # Install pipenv
+pipenv run python app.py # Run the front-end
 ```
 Go to [web](http://localhost:5001) in your browser to see the App.
 

@@ -273,6 +273,8 @@ docker-compose down
 This project is based on the Sign Language MNIST dataset:
 [Dataset](https://www.kaggle.com/datasets/datamunge/sign-language-mnist?resource=download)
 
+![image](ASL.png)
+
 The dataset is cited here as the source of the training data. Downloading it is not required to run the application.
 
 ## Development Workflow

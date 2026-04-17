@@ -2,6 +2,7 @@
 
 [![CI Subsystems](https://github.com/swe-students-spring2026/4-containers-next_team/actions/workflows/ci.yml/badge.svg)](https://github.com/swe-students-spring2026/4-containers-next_team/actions/workflows/ci.yml)
 [![lint-free](https://github.com/swe-students-spring2026/4-containers-next_team/actions/workflows/lint.yml/badge.svg)](https://github.com/swe-students-spring2026/4-containers-next_team/actions/workflows/lint.yml)
+![Python](https://img.shields.io/badge/python-3.10-blue?logo=python)
 
 ## App Description:
 SignBridge is an educational web platform that helps users understand sign language recognition results through an interactive dashboard.
@@ -187,6 +188,8 @@ Docker compose will use this file. The default values inside are fine for runnin
 ## Workflow 1: Web App — Running Locally ## 
 
 **1. Start the Machine Learning Client** 
+
+Run in sequence one after another
 ```bash
 cd machine-learning-client
 pipenv install     # Install pipenv
@@ -197,6 +200,7 @@ PYTHONPATH=src pipenv run python main.py    # Run the back-end
 ```
 
 **2 Start the Web App**
+
 Split a new terminal window
 ```bash
 cd web-app
